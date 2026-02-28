@@ -121,6 +121,9 @@ async function processResult(resJson) {
   let iters = resJson.iterations
   let norm = resJson.norm_of_matrix
 
+  console.log('Response from server:', resJson)
+  console.log('Norm of C:', norm)
+
   let res_str = '> найденное решение:\n'
   for (let i = 0; i < x.length; i++) {
     res_str += `x_${i + 1} = ${x[i]}\n`
@@ -133,6 +136,47 @@ async function processResult(resJson) {
   res_str += `> норма приведенной матрицы C: ${norm}\n`
 
   result.value = res_str
+}
+
+const handleFileUpload = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const content = e.target.result
+      const lines = content.trim().split('\n').filter(line => line.trim())
+      
+      const matrixRows = []
+      const vectorValues = []
+      
+      for (const line of lines) {
+        const values = line.trim().split(/\s+/).map(Number)
+        if (values.length < 2) continue
+        
+        const bValue = values[values.length - 1]
+        vectorValues.push(bValue)
+        
+        const matrixRow = values.slice(0, -1)
+        matrixRows.push(matrixRow.join(' '))
+      }
+      
+      matrixA.value = matrixRows.join('\n')
+      vectorB.value = vectorValues.join('\n')
+      error.value = ''
+      
+    } catch (err) {
+      error.value = 'ридинг эрор: ' + err.message
+    }
+  }
+  
+  reader.onerror = () => {
+    error.value = 'не удалось прочитать файл'
+  }
+  
+  reader.readAsText(file)
+  event.target.value = ''
 }
 
 const clearError = () => {
@@ -213,9 +257,22 @@ const clearError = () => {
       </div>
     </div>
     
-    <button @click="handleSubmit" class="btn btn-primary">
-      Отправить
-    </button>
+    <div class="button-group">
+      <button @click="handleSubmit" class="btn btn-primary">
+        Отправить
+      </button>
+      
+      <label class="btn btn-secondary" for="fileInput">
+        Приложить файл
+      </label>
+      <input 
+        id="fileInput"
+        type="file" 
+        accept=".txt"
+        @change="handleFileUpload"
+        style="display: none;"
+      />
+    </div>
     
     <div v-if="result" class="output">
       <div class="output-label">Вывод:</div>
@@ -289,6 +346,12 @@ const clearError = () => {
 
 .form-input-small {
   max-width: 120px;
+}
+
+.button-group {
+  display: flex;
+  gap: $spacing-md;
+  align-items: center;
 }
 
 .output {

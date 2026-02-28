@@ -47,9 +47,10 @@ func SolveHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := dto.SolveResponse{
-		Solution:   res.Solution,
-		Errors:     res.Errors,
-		Iterations: res.Iterations,
+		Solution:     res.Solution,
+		Errors:       res.Errors,
+		Iterations:   res.Iterations,
+		NormOfMatrix: res.NormOfMatrix,
 	}
 
 	respondJSON(w, 200, resp)

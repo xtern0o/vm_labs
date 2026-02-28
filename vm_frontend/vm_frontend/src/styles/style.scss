@@ -147,6 +147,20 @@ a {
     }
 }
 
+.btn-secondary {
+    border-color: $border-color;
+    background: rgba($text-secondary, 0.05);
+    color: $text-secondary;
+
+    &:hover {
+        background: rgba($text-secondary, 0.1);
+    }
+
+    &:active {
+        background: rgba($text-secondary, 0.15);
+    }
+}
+
 /* Output */
 .output {
     padding: $spacing-md;
