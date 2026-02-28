@@ -9,9 +9,10 @@ type SolveRequest struct {
 }
 
 type SolveResponse struct {
-	Solution   []float64 `json:"solution"`
-	Errors     []float64 `json:"errors"`
-	Iterations int       `json:"iterations"`
+	Solution     []float64 `json:"solution"`
+	Errors       []float64 `json:"errors"`
+	Iterations   int       `json:"iterations"`
+	NormOfMatrix float64   `json:"norm_of_matrix"`
 }
 
 type ErrorResponse struct {

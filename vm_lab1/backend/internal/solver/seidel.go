@@ -73,9 +73,10 @@ func (s *SeidelSolver) Solve(
 
 		if normVal < eps {
 			return Result{
-				Solution:   x,
-				Iterations: iter + 1,
-				Errors:     errors,
+				Solution:     x,
+				Iterations:   iter + 1,
+				Errors:       errors,
+				NormOfMatrix: normC,
 			}, nil
 		}
 	}
