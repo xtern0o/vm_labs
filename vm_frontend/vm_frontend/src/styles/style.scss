@@ -1,0 +1,247 @@
+@import './variables.scss';
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: $bg-primary;
+    color: $text-primary;
+    font-family: $mono-font;
+    font-size: $font-size-base;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Common Classes */
+.container {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 $spacing-lg;
+}
+
+.container-fluid {
+    width: 100%;
+    padding: 0 $spacing-lg;
+}
+
+/* Links */
+a {
+    color: $accent-color;
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: lighten($accent-color, 15%);
+    }
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: $spacing-lg;
+}
+
+.form-label {
+    display: block;
+    font-family: $mono-font;
+    color: $text-primary;
+    margin-bottom: $spacing-sm;
+    font-size: $font-size-small;
+}
+
+.form-input {
+    width: 100%;
+    max-width: 400px;
+    padding: $spacing-sm $spacing-md;
+    font-family: $mono-font;
+    font-size: $font-size-base;
+    color: $text-primary;
+    background: $bg-secondary;
+    border: $border-width solid $border-color;
+    border-radius: $border-radius;
+    transition: border-color $transition-fast;
+
+    &:focus {
+        outline: none;
+        border-color: $accent-color;
+    }
+
+    &::placeholder {
+        color: $text-secondary;
+    }
+}
+
+.form-textarea {
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    font-family: $mono-font;
+    font-size: $font-size-base;
+    color: $text-primary;
+    background: $bg-secondary;
+    border: $border-width solid $border-color;
+    border-radius: $border-radius;
+    transition: border-color $transition-fast;
+    resize: vertical;
+    min-height: 120px;
+
+    &:focus {
+        outline: none;
+        border-color: $accent-color;
+    }
+
+    &::placeholder {
+        color: $text-secondary;
+    }
+}
+
+/* Buttons */
+.btn {
+    font-family: $mono-font;
+    font-size: $font-size-base;
+    padding: $spacing-sm $spacing-lg;
+    border: $border-width solid $border-color;
+    border-radius: $border-radius;
+    background: $bg-secondary;
+    color: $text-primary;
+    cursor: pointer;
+    transition: all $transition-fast;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &:hover {
+        border-color: $accent-color;
+        background: rgba($accent-color, 0.05);
+    }
+
+    &:active {
+        background: rgba($accent-color, 0.1);
+        transform: translateY(1px);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+
+        &:hover {
+            border-color: $border-color;
+            background: $bg-secondary;
+        }
+    }
+}
+
+.btn-primary {
+    border-color: $accent-color;
+    background: rgba($accent-color, 0.1);
+    color: $accent-color;
+
+    &:hover {
+        background: rgba($accent-color, 0.2);
+    }
+
+    &:active {
+        background: rgba($accent-color, 0.3);
+    }
+}
+
+/* Output */
+.output {
+    padding: $spacing-md;
+    background: $bg-secondary;
+    border: $border-width solid $border-color;
+    border-left: 3px solid $accent-color;
+}
+
+.output-label {
+    font-family: $mono-font;
+    font-size: $font-size-small;
+    color: $text-secondary;
+    margin-bottom: $spacing-xs;
+}
+
+.output-value {
+    font-family: $mono-font;
+    font-size: $font-size-base;
+    color: $accent-color;
+}
+
+/* Alerts */
+.alert {
+    font-family: $mono-font;
+    font-size: $font-size-base;
+    padding: $spacing-md;
+    border: $border-width solid;
+    border-radius: $border-radius;
+    margin-bottom: $spacing-lg;
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-sm;
+
+    &::before {
+        content: '[!]';
+        font-weight: bold;
+        flex-shrink: 0;
+    }
+}
+
+.alert-error {
+    background: rgba(#ff0000, 0.05);
+    border-color: #ff0000;
+    color: #ff6666;
+
+    &::before {
+        color: #ff0000;
+    }
+}
+
+.alert-warning {
+    background: rgba(#ffaa00, 0.05);
+    border-color: #ffaa00;
+    color: #ffcc66;
+
+    &::before {
+        color: #ffaa00;
+    }
+}
+
+.alert-info {
+    background: rgba($accent-color, 0.05);
+    border-color: $accent-color;
+    color: $accent-color;
+
+    &::before {
+        color: $accent-color;
+    }
+}
+
+.alert-success {
+    background: rgba(#00ff00, 0.05);
+    border-color: #00ff00;
+    color: #66ff66;
+
+    &::before {
+        color: #00ff00;
+    }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: $bg-primary;
+}
+
+::-webkit-scrollbar-thumb {
+    background: $border-color;
+    border-radius: $border-radius;
+
+    &:hover {
+        background: lighten($border-color, 10%);
+    }
+}
