@@ -1,6 +1,6 @@
 import { Page, Folder } from '@/models/Page.js'
 
-// Структура с папками и страницами
+// структура с папками и страницами
 export const structure = [
   new Folder({
     id: 'vm_labs',

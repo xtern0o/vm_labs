@@ -106,12 +106,33 @@ const handleSubmit = () => {
 
   api.post('/api/solve', payload)
     .then(response => {
-      result.value = JSON.stringify(response.data, null, 2)
+      // result.value = JSON.stringify(response.data, null, 2)
+      processResult(response.data)
     })
     .catch(err => {
       error.value = (err.response?.data?.error || 'Ошибка запроса') + ": " + err.response?.data?.details
       result.value = ''
     })
+}
+
+async function processResult(resJson) {
+  let x = resJson.solution
+  let errors = resJson.errors
+  let iters = resJson.iterations
+  let norm = resJson.norm_of_matrix
+
+  let res_str = '> найденное решение:\n'
+  for (let i = 0; i < x.length; i++) {
+    res_str += `x_${i + 1} = ${x[i]}\n`
+  }
+  res_str += `> количество итераций: ${iters}\n`
+  res_str += `> погрешности на каждой итерации:\n`
+  for (let i = 0; i < errors.length; i++) {
+    res_str += `${i + 1}: ${errors[i]}\n`
+  }
+  res_str += `> норма приведенной матрицы C: ${norm}\n`
+
+  result.value = res_str
 }
 
 const clearError = () => {
@@ -198,7 +219,7 @@ const clearError = () => {
     
     <div v-if="result" class="output">
       <div class="output-label">Вывод:</div>
-      <div class="output-value">{{ result }}</div>
+      <pre class="output-value">{{ result }}</pre>
     </div>
   </div>
 </template>
