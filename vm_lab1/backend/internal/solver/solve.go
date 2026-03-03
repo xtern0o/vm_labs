@@ -7,6 +7,7 @@ type Result struct {
 	Iterations   int
 	Errors       []float64
 	NormOfMatrix float64
+	Messages     []string
 }
 
 type Solver interface {

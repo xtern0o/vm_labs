@@ -120,6 +120,7 @@ async function processResult(resJson) {
   let errors = resJson.errors
   let iters = resJson.iterations
   let norm = resJson.norm_of_matrix
+  let messages = resJson.messages
 
   console.log('Response from server:', resJson)
   console.log('Norm of C:', norm)
@@ -134,6 +135,13 @@ async function processResult(resJson) {
     res_str += `${i + 1}: ${errors[i]}\n`
   }
   res_str += `> норма приведенной матрицы C: ${norm}\n`
+
+  let val = ''
+  messages.forEach(msg => {
+    val += msg
+    val += '; '
+  });
+  error.value = val
 
   result.value = res_str
 }

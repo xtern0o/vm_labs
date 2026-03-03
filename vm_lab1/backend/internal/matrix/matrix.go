@@ -155,7 +155,7 @@ func IsDiagonallyDominant(A Matrix) bool {
 				sumExceptDiag += math.Abs(val)
 			}
 		}
-		if diag <= sumExceptDiag {
+		if diag < sumExceptDiag {
 			return false
 		}
 	}
@@ -175,7 +175,7 @@ func applyPermutation(A Matrix, b Vector, index []int) {
 	}
 }
 
-// модификация IsDiagonallyDominant на перестановки
+// модификация IsDiagonallyDominant на перестановки (не меняет исходные данные)
 func checkPermutation(A Matrix, b Vector, index []int) bool {
 	ACopy := CopyMatrix(A)
 	bCopy := CopyVector(b)
@@ -215,10 +215,10 @@ func TryToMakeDiagonallyDominant(A Matrix, b Vector) bool {
 	}
 
 	n := len(A)
-	indices := make([]int, n)
+	index := make([]int, n)
 	for i := 0; i < n; i++ {
-		indices[i] = i
+		index[i] = i
 	}
 
-	return tryPermutations(A, b, indices, 0)
+	return tryPermutations(A, b, index, 0)
 }

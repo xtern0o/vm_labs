@@ -2,6 +2,7 @@ package solver
 
 import (
 	"fmt"
+	"math"
 	"vm_lab1/internal/matrix"
 )
 
@@ -30,8 +31,18 @@ func (s *SeidelSolver) Solve(
 	ACopy := matrix.CopyMatrix(A)
 	bCopy := matrix.CopyVector(b)
 
+	messages := make([]string, 0)
+
 	if !matrix.TryToMakeDiagonallyDominant(ACopy, bCopy) {
-		return Result{}, fmt.Errorf("матрицу A не удалось привести к диагональному преобладанию")
+		messages = append(messages, "Диагонального преобладания нет. Сходимость НЕ гарантирована")
+	}
+
+	fmt.Println("- Матрица А с преобладанием: ")
+	for i := 0; i < len(ACopy); i++ {
+		for j := 0; j < len(ACopy); j++ {
+			fmt.Printf("%f ", ACopy[i][j])
+		}
+		fmt.Println()
 	}
 
 	C, d, err := matrix.BuildCanonicalForm(ACopy, bCopy)
@@ -41,7 +52,8 @@ func (s *SeidelSolver) Solve(
 
 	normC := matrix.NormOfMatrix(C)
 	if normC >= 1 {
-		return Result{}, fmt.Errorf("||C|| = %.6f >= 1, сходимость не гарантирована", normC)
+		fmt.Println("Норма больше 1")
+		messages = append(messages, "[!] ||C|| >= 1. Сходимость не гаранитирована")
 	}
 
 	x := matrix.CopyVector(x0)   // текущее решение
@@ -72,11 +84,23 @@ func (s *SeidelSolver) Solve(
 		errors = append(errors, normVal)
 
 		if normVal < eps {
+			fmt.Println("- невязка с конечным вектором:")
+			final := make([]float64, len(x))
+			for i := 0; i < len(x); i++ {
+				sum := 0.0
+				for j := 0; j < len(x); j++ {
+					sum += ACopy[i][j] * x[j]
+				}
+				final[i] = math.Abs(sum - bCopy[i])
+				fmt.Println(final[i])
+			}
+
 			return Result{
 				Solution:     x,
 				Iterations:   iter + 1,
 				Errors:       errors,
 				NormOfMatrix: normC,
+				Messages:     messages,
 			}, nil
 		}
 	}

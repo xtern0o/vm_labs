@@ -51,6 +51,7 @@ func SolveHandler(w http.ResponseWriter, r *http.Request) {
 		Errors:       res.Errors,
 		Iterations:   res.Iterations,
 		NormOfMatrix: res.NormOfMatrix,
+		Messages:     res.Messages,
 	}
 
 	respondJSON(w, 200, resp)

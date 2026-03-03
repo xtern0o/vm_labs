@@ -13,6 +13,7 @@ type SolveResponse struct {
 	Errors       []float64 `json:"errors"`
 	Iterations   int       `json:"iterations"`
 	NormOfMatrix float64   `json:"norm_of_matrix"`
+	Messages     []string  `json:"messages"`
 }
 
 type ErrorResponse struct {
