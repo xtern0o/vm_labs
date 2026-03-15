@@ -13,6 +13,12 @@ export const structure = [
         description: 'Решение СЛАУ методом Гаусса-Зейделя',
         component: () => import('@/components/labs/Lab1.vue')
       }),
+      new Page({
+        id: 'lab2',
+        name: 'Лабораторная работа 2',
+        description: 'Решение нелинейных уравнений и систем',
+        component: () => import('@/components/labs/Lab2.vue')
+      }),
     ]
   }),
 ]

@@ -53,7 +53,7 @@ func (s *SeidelSolver) Solve(
 	normC := matrix.NormOfMatrix(C)
 	if normC >= 1 {
 		fmt.Println("Норма больше 1")
-		messages = append(messages, "[!] ||C|| >= 1. Сходимость не гаранитирована")
+		messages = append(messages, "||C|| >= 1. Сходимость не гаранитирована")
 	}
 
 	x := matrix.CopyVector(x0)   // текущее решение

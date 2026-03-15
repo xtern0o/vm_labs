@@ -16,6 +16,8 @@ import (
 )
 
 func main() {
+	// fmt.Println(solver.SolveSystem2(catalog.GetSystems()[2], solver.NewSystemSimpleIterSolver(), 2, 1, 0.001, 200))
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
