@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -9,6 +10,8 @@ import (
 	"syscall"
 	"time"
 	"vm_lab2/handler"
+	"vm_lab2/internal/catalog"
+	"vm_lab2/internal/solver"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -16,7 +19,7 @@ import (
 )
 
 func main() {
-	// fmt.Println(solver.SolveSystem2(catalog.GetSystems()[2], solver.NewSystemSimpleIterSolver(), 2, 1, 0.001, 200))
+	fmt.Println(solver.SolveSystem2(catalog.GetSystem(1), catalog.GetPhiSystem(1), solver.NewSystemSimpleIterSolver(), 1, 4, 0.001, 200))
 
 	r := chi.NewRouter()
 

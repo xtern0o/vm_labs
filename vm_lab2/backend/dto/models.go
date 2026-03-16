@@ -15,6 +15,14 @@ type EquationSolveRequest struct {
 	MaxIter    *int     `json:"max_iter,omitempty"`
 }
 
+type System2SolveRequest struct {
+	SystemId int      `json:"system_id"`
+	x0       *float64 `json:"x0,omitempty"`
+	y0       *float64 `json:"y0,omitempty"`
+	Eps      *float64 `json:"eps,omitempty"`
+	MaxIter  *int     `json:"max_iter,omitempty"`
+}
+
 type EquationResponse struct {
 	Result solver.Result `json:"result"`
 }

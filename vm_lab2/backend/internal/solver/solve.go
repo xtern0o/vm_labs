@@ -17,11 +17,12 @@ func SolveEquation(
 
 func SolveSystem2(
 	system equations.System2,
+	phiSystem equations.System2,
 	s Systen2Solver,
 	x0 float64,
 	y0 float64,
 	eps float64,
 	maxIter int,
 ) (System2Result, error) {
-	return s.Solve(system, x0, y0, eps, maxIter)
+	return s.Solve(system, phiSystem, x0, y0, eps, maxIter)
 }

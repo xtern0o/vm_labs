@@ -64,8 +64,11 @@ func (s *SimpleIterationsSolver) Solve(
 	if iter >= maxIter && math.Abs(xCurr-xPrev) > eps {
 		return Result{}, errors.New("iter limit")
 	}
+	if math.IsNaN(xCurr) || math.IsInf(xPrev, 0) {
+		return Result{}, fmt.Errorf("функция phi не определена на %f. Метод не сходится", xPrev)
+	}
 	if math.IsNaN(f(xCurr)) {
-		return Result{}, fmt.Errorf("функция не определена на %f", xCurr)
+		return Result{}, fmt.Errorf("функция не определена на %f. Метод не сходится", xCurr)
 	}
 
 	return Result{

@@ -16,6 +16,7 @@ func NewSystemSimpleIterSolver() *SystemSimpleIterSolver {
 
 func (s *SystemSimpleIterSolver) Solve(
 	system equations.System2,
+	phiSystem equations.System2,
 	x0 float64,
 	y0 float64,
 	eps float64,
@@ -27,12 +28,13 @@ func (s *SystemSimpleIterSolver) Solve(
 		return System2Result{}, errors.New("system equations should not be nil")
 	}
 
-	phi1 := func(x float64, y float64) float64 {
-		return f1(x, y) - x
+	phi1 := phiSystem[0]
+	phi2 := phiSystem[1]
+
+	if phi1 == nil || phi2 == nil {
+		return System2Result{}, errors.New("phi functions should not be nil")
 	}
-	phi2 := func(x float64, y float64) float64 {
-		return f2(x, y) - y
-	}
+
 	messages := []string{}
 
 	// проверка условной сходимости в начальной точке
@@ -60,7 +62,7 @@ func (s *SystemSimpleIterSolver) Solve(
 	q2 := math.Abs(dPhi2Dx) + math.Abs(dPhi2Dy)
 	q := math.Max(q1, q2)
 	if math.IsNaN(q) || math.IsInf(q, 0) {
-		messages = append(messages, "не удалось оценить достаточное условие сходимости (q нечисловое), пробуем решить!")
+		messages = append(messages, "не удалось оценить достаточное условие сходимости (q нечисловое)")
 	} else if q >= 1 {
 		messages = append(messages, fmt.Sprintf("достаточное условие сходимости не выполнено: q=%.6f >= 1; пробуем решить!", q))
 	}

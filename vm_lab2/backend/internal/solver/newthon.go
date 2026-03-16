@@ -83,7 +83,7 @@ func (s *NewthonSolver) Solve(
 func getNextX(f equations.Equation, x float64) (float64, error) {
 	deriv := numeric.Derivative(f, x)
 	if math.Abs(deriv) <= minDerivative {
-		return 0, fmt.Errorf("derivative is too close to zero at x=%f", x)
+		return 0, fmt.Errorf("производная слишком близка к 0 в точке x=%f", x)
 	}
 
 	return x - (f(x) / deriv), nil
