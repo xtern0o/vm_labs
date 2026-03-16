@@ -7,6 +7,7 @@ import * as echarts from 'echarts/core'
 import { LineChart, ScatterChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent, TitleComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
+import Papa from "papaparse"
 
 echarts.use([LineChart, ScatterChart, GridComponent, TooltipComponent, TitleComponent, CanvasRenderer])
 
@@ -346,6 +347,7 @@ async function processResultSystem(resJson) {
   const steps = resJson.steps
   const messages = resJson.messages
   const errors = resJson.errors
+  const iters = resJson.iterations
 
   console.log(resJson)
 
@@ -359,6 +361,7 @@ async function processResultSystem(resJson) {
       resStr += `]\n`
   }
   resStr += `> найденное решение: (${solution.x}, ${solution.y})\n`
+  resStr += `> количество итераций: ${iters}\n`
   resStr += `> шаги приближения: [\n`
   steps.forEach(step => {
     resStr += `  (${step.x}, ${step.y}),\n`
@@ -378,6 +381,115 @@ async function processResultSystem(resJson) {
 const clearError = () => {
   error.value = ''
 }
+
+// equationOptions, equationMethodOptions, systemOptions, systemMethodOptions
+// предполагается, что объявлены во внешней области
+
+function handleFileUploadEquation(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  Papa.parse(file, {
+    header: true, // парсим как объекты, имена — из первой строки CSV
+    skipEmptyLines: true,
+    complete: (results) => {
+      try {
+        const data = results.data
+        if (!data.length) throw new Error('Нет строк с данными')
+
+        // Берем первую строку-объект
+        const row = data[0]
+
+        // Проверка наличия и валидности значений
+        const fields = ['eps', 'maxIter', 'equationId', 'methodId', 'a', 'b']
+        for (const f of fields) {
+          if (!(f in row) || row[f] === "") {
+            throw new Error(`В файле отсутствует обязательное поле "${f}"`)
+          }
+        }
+
+        const [eps, maxIterVal, equationId, methodId, aVal, bVal] = [
+          Number(row.eps), Number(row.maxIter), Number(row.equationId),
+          Number(row.methodId), Number(row.a), Number(row.b)
+        ]
+
+        if (![eps, maxIterVal, equationId, methodId, aVal, bVal].every(v => !isNaN(v))) {
+          throw new Error('Некорректный формат: одно из значений не является числом')
+        }
+
+        const foundEquation = equationOptions.find(opt => opt.id === equationId)
+        if (!foundEquation) throw new Error(`Уравнение с id=${equationId} не найдено`)
+
+        const foundMethod = equationMethodOptions.find(opt => opt.id === methodId)
+        if (!foundMethod) throw new Error(`Метод с id=${methodId} не найден`)
+
+        epsilon.value = eps
+        maxIter.value = maxIterVal
+        selectedEquation.value = equationId
+        selectedEquationMethod.value = methodId
+        intervalA.value = aVal
+        intervalB.value = bVal
+        error.value = ''
+      } catch (err) {
+        error.value = `Ошибка загрузки файла уравнения: ${err.message}`
+      }
+    },
+    error: (err) => {
+      error.value = `Ошибка чтения файла уравнения: ${err.message}`
+    }
+  })
+}
+
+function handleFileUploadSystem(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: (results) => {
+      try {
+        const data = results.data
+        if (!data.length) throw new Error('Нет строк с данными')
+
+        // Берем первую строку-объект
+        const row = data[0]
+        const fields = ['eps', 'maxIter', 'systemId', 'methodId', 'x0', 'y0']
+        for (const f of fields) {
+          if (!(f in row) || row[f] === "") {
+            throw new Error(`В файле отсутствует обязательное поле "${f}"`)
+          }
+        }
+
+        const [eps, maxIterVal, systemId, methodId, x0, y0] =
+          [Number(row.eps), Number(row.maxIter), Number(row.systemId), Number(row.methodId), Number(row.x0), Number(row.y0)]
+        if (![eps, maxIterVal, systemId, methodId, x0, y0].every(v => !isNaN(v))) {
+          throw new Error('Некорректный формат: одно из значений не является числом')
+        }
+
+        const foundSystem = systemOptions.find(opt => opt.id === systemId)
+        if (!foundSystem) throw new Error(`Система с id=${systemId} не найдена`)
+
+        const foundMethod = systemMethodOptions.find(opt => opt.id === methodId)
+        if (!foundMethod) throw new Error(`Метод с id=${methodId} не найден`)
+
+        epsilon.value = eps
+        maxIter.value = maxIterVal
+        selectedSystem.value = systemId
+        selectedSystemMethod.value = methodId
+        systemX0.value = x0
+        systemY0.value = y0
+        error.value = ''
+      } catch (err) {
+        error.value = `Ошибка загрузки файла системы: ${err.message}`
+      }
+    },
+    error: (err) => {
+      error.value = `Ошибка чтения файла системы: ${err.message}`
+    }
+  })
+}
+
 </script>
 
 <template>
@@ -484,6 +596,16 @@ const clearError = () => {
           </label>
         </div>
 
+        <label class="btn btn-secondary" for="fileInputEq">
+          Приложить файл
+        </label>
+        <input 
+          id="fileInputEq"
+          type="file" 
+          accept=".csv"
+          @change="handleFileUploadEquation"
+          style="display: none;"
+        />
         <button
           class="btn btn-primary solve-btn"
           :disabled="selectedEquation === null || selectedEquationMethod === null"
@@ -559,6 +681,16 @@ const clearError = () => {
           </label>
         </div>
 
+        <label class="btn btn-secondary" for="fileInputSys">
+          Приложить файл
+        </label>
+        <input 
+          id="fileInputSys"
+          type="file" 
+          accept=".csv"
+          @change="handleFileUploadSystem"
+          style="display: none;"
+        />
         <button
           class="btn btn-primary solve-btn"
           :disabled="selectedSystem === null || selectedSystemMethod === null"
@@ -734,6 +866,12 @@ const clearError = () => {
 
 .solve-btn {
   margin-top: auto;
+}
+
+.button-group {
+  display: flex;
+  gap: $spacing-md;
+  align-items: center;
 }
 
 .output {
