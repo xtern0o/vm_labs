@@ -19,4 +19,5 @@ type System2Result struct {
 	Iterations int      `json:"iterations"`
 	Messages   []string `json:"messages"`
 	Steps      []Point  `json:"steps"`
+	Errors     []Point  `json:"errors"`
 }

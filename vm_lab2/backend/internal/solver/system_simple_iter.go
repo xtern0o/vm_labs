@@ -68,29 +68,27 @@ func (s *SystemSimpleIterSolver) Solve(
 	}
 
 	steps := []Point{}
+	errPoints := []Point{}
 
 	xPrev, yPrev := x0, y0
 	xCurr, yCurr := phi1(x0, y0), phi2(x0, y0)
 	if math.IsNaN(xCurr) || math.IsInf(xCurr, 0) || math.IsNaN(yCurr) || math.IsInf(yCurr, 0) {
-		return System2Result{}, fmt.Errorf("iteration left function domain at initial step: x=%f, y=%f", xCurr, yCurr)
+		return System2Result{}, fmt.Errorf("итерации вышли за зону определения функции phi на первом шаге: x=%f, y=%f", xCurr, yCurr)
 	}
 
 	steps = append(steps, Point{xCurr, yCurr})
+	errPoints = append(errPoints, Point{math.Abs(xCurr - xPrev), math.Abs(yCurr - yPrev)})
 
 	iter := 1
-	for ; iter < maxIter && math.Max(math.Abs(xPrev-xCurr), math.Abs(yPrev-yCurr)) > eps; iter++ {
+	for ; iter < maxIter && math.Max(math.Abs(xPrev-xCurr), math.Abs(yPrev-yCurr)) > eps && !checkSystemAns(system, xCurr, yCurr, eps); iter++ {
 		xPrev, yPrev = xCurr, yCurr
 		xCurr, yCurr = phi1(xPrev, yPrev), phi2(xPrev, yPrev)
 		if math.IsNaN(xCurr) || math.IsInf(xCurr, 0) || math.IsNaN(yCurr) || math.IsInf(yCurr, 0) {
-			return System2Result{}, fmt.Errorf("iteration left function domain at step %d: x=%f, y=%f", iter, xCurr, yCurr)
+			return System2Result{}, fmt.Errorf("итерации вышли за зону определения функции phi на шаге %d: xCurr=%f, yCurr=%f, xPrev=%f, yPrev=%f", iter, xCurr, yCurr, xPrev, yPrev)
 		}
-		steps = append(steps, Point{xCurr, yCurr})
 
-		f1Val := f1(xCurr, yCurr)
-		f2Val := f2(xCurr, yCurr)
-		if math.Abs(f1Val) < eps && math.Abs(f2Val) < eps {
-			break
-		}
+		steps = append(steps, Point{xCurr, yCurr})
+		errPoints = append(errPoints, Point{math.Abs(xCurr - xPrev), math.Abs(yCurr - yPrev)})
 
 	}
 
@@ -103,6 +101,13 @@ func (s *SystemSimpleIterSolver) Solve(
 		Iterations: iter,
 		Messages:   messages,
 		Steps:      steps,
+		Errors:     errPoints,
 	}, nil
 
+}
+
+func checkSystemAns(s equations.System2, x float64, y float64, eps float64) bool {
+	f1Val := s[0](x, y)
+	f2Val := s[1](x, y)
+	return math.Abs(f1Val) < eps && math.Abs(f2Val) < eps
 }

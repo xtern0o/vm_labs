@@ -5,30 +5,26 @@ import (
 	"vm_lab2/internal/equations"
 )
 
-var sys1func1 = func(x float64, y float64) float64 {
-	return math.Tan(x*y+0.3) - x*x
+var sys1func1 = func(x, y float64) float64 {
+	return math.Cos(y) + x - 1.5
 }
-var sys1func2 = func(x float64, y float64) float64 {
-	return 0.9*x*x + 2*y*y - 1
+var sys1func2 = func(x, y float64) float64 {
+	return math.Sin(x) + y - 1
 }
 
-var sys2func1 = func(x float64, y float64) float64 {
+var sys2func1 = func(x, y float64) float64 {
 	return x*x + y*y - 1
 }
-var sys2func2 = func(x float64, y float64) float64 {
+var sys2func2 = func(x, y float64) float64 {
 	return x*x - 3*y - 0.5
 }
 
-// приводим к виду x = phi(x)
-var sys1phi1 = func(x float64, y float64) float64 {
-	return math.Sqrt(math.Tan(x*y + 0.3))
+// x = phi(x, y)
+var sys1phi1 = func(x, y float64) float64 {
+	return 1.5 - math.Cos(y)
 }
-var sys1phi2 = func(x float64, y float64) float64 {
-	if y > 0 {
-		return math.Sqrt((1 - 0.9*x*x) / 2)
-	} else {
-		return -math.Sqrt((1 - 0.9*x*x) / 2)
-	}
+var sys1phi2 = func(x, y float64) float64 {
+	return 1 - math.Sin(x)
 }
 
 var sys2phi1 = func(x, y float64) float64 {

@@ -35,12 +35,12 @@ const systemOptions = [
   {
     id: 1,
     label: 'Система 1',
-    tex: '\\begin{cases}\\tan(xy+0.3)-x^2=0\\\\0.9x^2+2y^2-1=0\\end{cases}',
+    tex: '\\begin{cases}cos y+x-1.5=0\\\\sin x+y-4=0\\end{cases}',
   },
   {
     id: 2,
     label: 'Система 2',
-    tex: '\\begin{cases}x^2+y^2-1=0\\\\x-y=0\\end{cases}',
+    tex: '\\begin{cases}x^2+y^2-1=0\\\\x^2-3y=0.5\\end{cases}',
   },
 ]
 
@@ -133,16 +133,140 @@ function plotSelectedEquation(solution, steps) {
   showChart.value = true
 }
 
+function plotSelectedSystem(solution, steps) {
+  if (!selectedSystem.value) return
+
+  let f1, f2, domain
+  switch (selectedSystem.value) {
+    case 1:
+      f1 = (x, y) => Math.cos(y) + x - 1.5
+      f2 = (x, y) => Math.sin(x) + y - 1
+
+      domain = { xMin: -4, xMax: 4, yMin: -2, yMax: 6 }
+      break
+    case 2:
+      f1 = (x, y) => x ** 2 + y ** 2 - 1
+      f2 = (x, y) => x ** 2 - 3 * y - 0.5
+      domain = { xMin: -2, xMax: 2, yMin: -2, yMax: 2 }
+      break
+    default:
+      f1 = (x, y) => 0
+      f2 = (x, y) => 0
+      domain = { xMin: -2, xMax: 2, yMin: -2, yMax: 2 }
+  }
+
+  // строим level curves (контуры) этих функций = 0
+  const xSamples = 200
+  const ySamples = 200
+  const xVals = Array.from({ length: xSamples + 1 }, (_, i) =>
+    domain.xMin + (domain.xMax - domain.xMin) * i / xSamples)
+  const yVals = Array.from({ length: ySamples + 1 }, (_, j) =>
+    domain.yMin + (domain.yMax - domain.yMin) * j / ySamples)
+
+  // строим lines с мелкими контурами
+  // берём только те (x, y), где f меняет знак
+  // sampling |f| < 0.05
+
+  // найдем где f1(x, y)~0 и f2(x, y)~0
+  function findZeroContours(f, threshold = 0.005) {
+    const points = []
+    for (let xi = 0; xi < xSamples; ++xi) {
+      for (let yi = 0; yi < ySamples; ++yi) {
+        const x = xVals[xi]
+        const y = yVals[yi]
+        const f0 = f(x, y)
+        const f1_ = f(xVals[xi+1], y)
+        const f2_ = f(x, yVals[yi+1])
+
+        if (Math.abs(f0) < threshold) {
+          points.push([x, y])
+        } else if (f0 * f1_ < 0) {
+          points.push([(x + xVals[xi+1]) / 2, y])
+        } else if (f0 * f2_ < 0) {
+          points.push([x, (y + yVals[yi+1]) / 2])
+        }
+      }
+    }
+    return points
+  }
+
+  const zeros_f1 = findZeroContours(f1)
+  const zeros_f2 = findZeroContours(f2)
+
+  // серенькие эстимейты
+  const stepPoints = Array.isArray(steps)
+    ? steps.map(pt => [pt.x, pt.y])
+    : []
+  // солюшин
+  const solutionPoint =
+    solution && typeof solution.x === 'number' && typeof solution.y === 'number'
+      ? [[solution.x, solution.y]]
+      : []
+
+  chartOption.value = {
+    title: { text: 'График системы', left: 'center' },
+    tooltip: { trigger: 'axis' },
+    grid: { left: 40, right: 20, top: 40, bottom: 40 },
+    xAxis: { type: 'value', name: 'x', min: domain.xMin, max: domain.xMax },
+    yAxis: { type: 'value', name: 'y', min: domain.yMin, max: domain.yMax },
+    series: [
+      // f1=0 (синий)
+      {
+        type: 'scatter',
+        data: zeros_f1,
+        symbolSize: 3,
+        itemStyle: { color: '#005bea' }, // синий
+        name: 'f₁(x, y) = 0',
+        z: 2,
+      },
+      // f2=0 (зелёный)
+      {
+        type: 'scatter',
+        data: zeros_f2,
+        symbolSize: 3,
+        itemStyle: { color: '#30b878' }, // зелёный
+        name: 'f₂(x, y) = 0',
+        z: 2,
+      },
+      // шаги (серые)
+      stepPoints.length > 0
+        ? {
+            type: 'scatter',
+            data: stepPoints,
+            symbolSize: 10,
+            itemStyle: { color: '#888', opacity: 0.7 },
+            name: 'steps',
+            z: 3,
+          }
+        : null,
+      // решение (красное)
+      solutionPoint.length > 0
+        ? {
+            type: 'scatter',
+            data: solutionPoint,
+            symbolSize: 14,
+            itemStyle: { color: '#e74c3c' },
+            name: 'solution',
+            z: 4,
+          }
+        : null,
+    ].filter(Boolean),
+  }
+  showChart.value = true
+}
+
 const solveEquation = () => {
 
   const eps = epsilon.value || 0.001
   const maxIterations = maxIter.value || 1000
 	const method = selectedEquationMethod.value
+  const intA = intervalA.value || 0
+  const intB = intervalB.value || 1
 
   const payload = {
     equation_id: selectedEquation.value,
-    a: intervalA.value,
-    b: intervalB.value,
+    a: intA,
+    b: intB,
     eps: eps,
 		max_iter: maxIterations
   }
@@ -218,7 +342,37 @@ async function processResultEquation(resJson) {
 }
 
 async function processResultSystem(resJson) {
+  const solution = resJson.solution
+  const steps = resJson.steps
+  const messages = resJson.messages
+  const errors = resJson.errors
+
   console.log(resJson)
+
+  let resStr = ""
+
+  if (messages.length > 0) {
+      resStr += `messages: [\n`
+      messages.forEach(msg => {
+        resStr += `  "${msg}",\n`
+      });
+      resStr += `]\n`
+  }
+  resStr += `> найденное решение: (${solution.x}, ${solution.y})\n`
+  resStr += `> шаги приближения: [\n`
+  steps.forEach(step => {
+    resStr += `  (${step.x}, ${step.y}),\n`
+  })
+  resStr += `]\n`
+  resStr += `> вектор погрешностей: [\n`
+  errors.forEach(err => {
+    resStr += `  (${err.x}, ${err.y})\n`
+  })
+  resStr += `]\n`
+
+  result.value = resStr
+
+  plotSelectedSystem(solution, steps)
 }
 
 const clearError = () => {
