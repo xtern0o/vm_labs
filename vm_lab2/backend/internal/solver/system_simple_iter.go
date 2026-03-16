@@ -86,6 +86,12 @@ func (s *SystemSimpleIterSolver) Solve(
 		}
 		steps = append(steps, Point{xCurr, yCurr})
 
+		f1Val := f1(xCurr, yCurr)
+		f2Val := f2(xCurr, yCurr)
+		if math.Abs(f1Val) < eps && math.Abs(f2Val) < eps {
+			break
+		}
+
 	}
 
 	if iter >= maxIter && math.Max(math.Abs(xPrev-xCurr), math.Abs(yPrev-yCurr)) > eps {

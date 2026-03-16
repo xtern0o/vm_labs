@@ -17,8 +17,8 @@ type EquationSolveRequest struct {
 
 type System2SolveRequest struct {
 	SystemId int      `json:"system_id"`
-	x0       *float64 `json:"x0,omitempty"`
-	y0       *float64 `json:"y0,omitempty"`
+	X0       *float64 `json:"x0,omitempty"`
+	Y0       *float64 `json:"y0,omitempty"`
 	Eps      *float64 `json:"eps,omitempty"`
 	MaxIter  *int     `json:"max_iter,omitempty"`
 }

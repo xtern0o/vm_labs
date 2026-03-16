@@ -21,6 +21,7 @@ const intervalB = ref(null)
 const systemX0 = ref(null)
 const systemY0 = ref(null)
 const error = ref('')
+const result = ref('')
 
 const equationOptions = [
   { id: 1, label: 'Уравнение 1', tex: 'x^2 + e^x - 10x\\sin x - 5x = 0' },
@@ -151,13 +152,36 @@ const solveEquation = () => {
       processResultEquation(response.data)
     })
     .catch(err => {
-      error.value = (err.response?.data?.error || 'Ошибка запроса') + ": " + err.response?.data?.details
-      // result.value = ''
+      error.value = (err.response?.data?.error || 'Ошибка запроса')
+      showChart.value = false
+      result.value = ''
     })
 }
 
 const solveSystem = () => {
-  // Заглушка: логика будет добавлена позже.
+  const eps = epsilon.value || 0.001
+  const maxIterations = maxIter.value || 1000
+	const method = selectedSystemMethod.value
+  const x0 = systemX0.value || 0
+  const y0 = systemY0.value || 0
+
+  const payload = {
+    system_id: selectedSystem.value,
+    x0: x0,
+    y0: y0,
+    eps: eps,
+    max_iter: maxIterations,    
+  }
+
+  api.post(`/api/system/${method}`, payload)
+    .then(response => {
+      processResultSystem(response.data)
+    })
+    .catch(err => {
+      error.value = (err.response?.data?.error || 'Ошибка запроса')
+      showChart.value = false
+      result.value = ''
+    })
 }
 
 async function processResultEquation(resJson) {
@@ -168,7 +192,33 @@ async function processResultEquation(resJson) {
 	const arg_error = resJson.result.arg_error
 	const steps = resJson.result.steps
 
+  let resStr = ""
+
+  if (messages.length > 0) {
+      resStr += `messages: [\n`
+      messages.forEach(msg => {
+        resStr += `  "${msg}",\n`
+      });
+      resStr += `]\n`
+  }
+
+  resStr += `> найденное решение: x = ${ans.x}\n`
+  resStr += `> f(x) = ${ans.y}\n`
+  
+  resStr += `> шаги приближения: [\n`
+  steps.forEach(step => {
+    resStr += `  (${step.x}, ${step.y}),\n`
+  })
+  resStr += `]\n`
+  resStr += `> погрешность аргумента |x_i - x_(i+1)| = ${arg_error}\n`
+
+
+  result.value = resStr
 	plotSelectedEquation(ans, steps)
+}
+
+async function processResultSystem(resJson) {
+  console.log(resJson)
 }
 
 const clearError = () => {
@@ -364,10 +414,10 @@ const clearError = () => {
         </button>
       </section>
     </div>
-
     <div v-if="showChart" class="output">
       <div class="output-label">График функции:</div>
       <VueECharts :option="chartOption" style="height: 320px; width: 100%;" />
+      <pre class="output-value">{{ result }}</pre>
     </div>
   </div>
 </template>

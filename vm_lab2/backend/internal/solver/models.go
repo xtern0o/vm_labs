@@ -18,5 +18,5 @@ type System2Result struct {
 	Solution   Point    `json:"solution"`
 	Iterations int      `json:"iterations"`
 	Messages   []string `json:"messages"`
-	Steps      []Point
+	Steps      []Point  `json:"steps"`
 }
