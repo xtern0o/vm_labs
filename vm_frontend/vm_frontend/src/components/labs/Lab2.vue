@@ -316,6 +316,7 @@ async function processResultEquation(resJson) {
 	const messages = resJson.result.messages
 	const arg_error = resJson.result.arg_error
 	const steps = resJson.result.steps
+  const iter = resJson.result.iterations
 
   let resStr = ""
 
@@ -329,6 +330,7 @@ async function processResultEquation(resJson) {
 
   resStr += `> найденное решение: x = ${ans.x}\n`
   resStr += `> f(x) = ${ans.y}\n`
+  resStr += `> количество итераций: ${iter}\n`
   
   resStr += `> шаги приближения: [\n`
   steps.forEach(step => {

@@ -36,15 +36,19 @@ func (s *NewthonSolver) Solve(
 	}
 
 	var xPrev float64
-	if f(a)*numeric.SecondDerivative(f, a) > 0 {
+
+	secondDerA := numeric.SecondDerivative(f, a)
+	secondDerB := numeric.SecondDerivative(f, b)
+
+	if f(a)*secondDerA > 0 {
 		xPrev = a
 		messages = append(messages, "x_0 = a, так как f(a)f''(a)>0")
-	} else if f(b)*numeric.SecondDerivative(f, b) > 0 {
+	} else if f(b)*secondDerB > 0 {
 		xPrev = b
 		messages = append(messages, "x_0=b, так как f(b)f''(b)>0")
 	} else {
-		xPrev = a
-		messages = append(messages, "быстрая сходимость не гарантирована, за начальное приближение выбрана точка x_0=a")
+		xPrev = (a + b) / 2
+		messages = append(messages, fmt.Sprintf("быстрая сходимость не гарантирована, за начальное приближение выбрана точка x_0=a. f''(a)=%f, f''(b)=%f", secondDerA, secondDerB))
 	}
 
 	xCurr, err := getNextX(f, xPrev)
@@ -63,6 +67,11 @@ func (s *NewthonSolver) Solve(
 			return Result{}, err
 		}
 		steps = append(steps, Point{xCurr, f(xCurr)})
+
+		if CheckAns(f, xCurr, eps) {
+			messages = append(messages, "достигли нужной точности")
+			break
+		}
 
 	}
 

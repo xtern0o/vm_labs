@@ -65,6 +65,8 @@ func (s *SystemSimpleIterSolver) Solve(
 		messages = append(messages, "не удалось оценить достаточное условие сходимости (q нечисловое)")
 	} else if q >= 1 {
 		messages = append(messages, fmt.Sprintf("достаточное условие сходимости не выполнено: q=%.6f >= 1; пробуем решить!", q))
+	} else {
+		messages = append(messages, fmt.Sprintf("достаточное условие сходимости выполнено: q=%.6f", q))
 	}
 
 	steps := []Point{}
@@ -80,7 +82,7 @@ func (s *SystemSimpleIterSolver) Solve(
 	errPoints = append(errPoints, Point{math.Abs(xCurr - xPrev), math.Abs(yCurr - yPrev)})
 
 	iter := 1
-	for ; iter < maxIter && math.Max(math.Abs(xPrev-xCurr), math.Abs(yPrev-yCurr)) > eps && !checkSystemAns(system, xCurr, yCurr, eps); iter++ {
+	for ; iter < maxIter && math.Max(math.Abs(xPrev-xCurr), math.Abs(yPrev-yCurr)) > eps; iter++ {
 		xPrev, yPrev = xCurr, yCurr
 		xCurr, yCurr = phi1(xPrev, yPrev), phi2(xPrev, yPrev)
 		if math.IsNaN(xCurr) || math.IsInf(xCurr, 0) || math.IsNaN(yCurr) || math.IsInf(yCurr, 0) {
@@ -90,7 +92,16 @@ func (s *SystemSimpleIterSolver) Solve(
 		steps = append(steps, Point{xCurr, yCurr})
 		errPoints = append(errPoints, Point{math.Abs(xCurr - xPrev), math.Abs(yCurr - yPrev)})
 
+		if checkSystemAns(system, xCurr, yCurr, eps) {
+			messages = append(messages, "достигли нужной точности")
+			break
+		}
+
 	}
+
+	f1Val := system[0](xCurr, yCurr)
+	f2Val := system[1](xCurr, yCurr)
+	messages = append(messages, fmt.Sprintf("f(x, y) = %f, g(x, y) = %f", f1Val, f2Val))
 
 	if iter >= maxIter && math.Max(math.Abs(xPrev-xCurr), math.Abs(yPrev-yCurr)) > eps {
 		return System2Result{}, errors.New("iter limit")

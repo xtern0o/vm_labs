@@ -38,3 +38,8 @@ func BasicCheck(f equations.Equation, a float64, b float64) error {
 
 	return nil
 }
+
+// проверка нужной точности по ответу
+func CheckAns(f equations.Equation, x, eps float64) bool {
+	return math.Abs(f(x)) < eps
+}

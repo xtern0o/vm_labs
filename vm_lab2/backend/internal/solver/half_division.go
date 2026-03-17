@@ -54,6 +54,11 @@ func (s *HalfDivisionSolver) Solve(
 		}
 		steps = append(steps, Point{x, fx})
 
+		if CheckAns(f, x, eps) {
+			messages = append(messages, "достигли нужной точности")
+			break
+		}
+
 		iter++
 		if iter > maxIter {
 			return Result{}, errors.New("iter limit")

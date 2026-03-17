@@ -42,12 +42,20 @@ func (s *SimpleIterationsSolver) Solve(
 		lambda *= -1
 	}
 
+	messages = append(messages, fmt.Sprintf("lambda=%f", lambda))
+
 	phi := func(x float64) float64 {
 		return x + lambda*f(x)
 	}
-	if numeric.Derivative(phi, a) >= 1 || numeric.Derivative(phi, b) >= 1 {
-		messages = append(messages, fmt.Sprintf("достаточное условие сходимости не выполнено - сходимость не гарантирована, q = %f > 1. Пробуем вычислить корень", math.Max(derivativeFA, derivativeFB)))
+
+	phiDerA := numeric.Derivative(phi, a)
+	phiDerB := numeric.Derivative(phi, b)
+
+	if phiDerA >= 1 || phiDerB >= 1 {
+		messages = append(messages, fmt.Sprintf("достаточное условие сходимости не выполнено - сходимость не гарантирована, q = %f > 1. Пробуем вычислить корень", math.Max(phiDerA, phiDerB)))
 	}
+
+	messages = append(messages, fmt.Sprintf("phi'(a)=%f, phi'(b)=%f", phiDerA, phiDerB))
 
 	steps := []Point{}
 
@@ -55,11 +63,12 @@ func (s *SimpleIterationsSolver) Solve(
 	xCurr := phi(xPrev)
 
 	iter := 0
-	for ; iter < maxIter && math.Abs(xCurr-xPrev) > eps; iter++ {
+	for ; (iter < maxIter && math.Abs(xCurr-xPrev) > eps) || !CheckAns(f, xCurr, eps); iter++ {
 		xPrev = xCurr
 		xCurr = phi(xCurr)
 
 		steps = append(steps, Point{xCurr, f(xCurr)})
+
 	}
 	if iter >= maxIter && math.Abs(xCurr-xPrev) > eps {
 		return Result{}, errors.New("iter limit")
