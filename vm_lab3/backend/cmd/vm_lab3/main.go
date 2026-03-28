@@ -1,6 +1,12 @@
 package main
 
 import (
+	"context"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 	"vm_lab3/internal/handler"
 
@@ -32,5 +38,34 @@ func main() {
 
 		r.Post("/integral/{solver_id}", handler.IntegralHandler)
 	})
+
+	srv := &http.Server{
+		Addr:         ":8080",
+		Handler:      r,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	go func() {
+		log.Println("сервер запущен!!")
+		if err := srv.ListenAndServe(); err != nil {
+			log.Fatalf("это конец... %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM)
+	<-quit
+
+	log.Println("выключаемся...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("ВЫКЛЮЧАЕМСЯ...")
+	}
+
+	log.Println("выкличились")
 
 }

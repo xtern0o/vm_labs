@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	defaultN = 4.0
+	defaultN = 4
 )
 
 func IntegralHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,14 +39,15 @@ func IntegralHandler(w http.ResponseWriter, r *http.Request) {
 		writeJSONError(w, http.StatusNotFound, fmt.Sprintf("error: %v", err))
 	}
 
-	n := req.N
-	if n == nil {
-		*n = defaultN
+	n := defaultN
+	if req.N != nil {
+		n = *req.N
 	}
 
-	res, err := service.SolveIntegral(*solver, fun, req.A, req.B, req.Eps, *n)
+	res, err := service.SolveIntegral(*solver, fun, req.A, req.B, req.Eps, n)
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
+		return
 	}
 	writeJSON(w, http.StatusOK, res)
 
