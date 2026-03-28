@@ -10,14 +10,16 @@ var (
 	rightRectSolver     *service.RightRectSolver     = service.NewRightRectSolver()
 	centralRectSolver   *service.CentralRectSolver   = service.NewCentralRectSolver()
 	trapezoidRectSolver *service.TrapezoidRectSolver = service.NewTrapezoidRectSolver()
+	simpsonSolver       *service.SimpsonSolver       = service.NewSimpsonSolver()
 )
 
 var (
-	id2method map[int]service.IntegralSolver = map[int]service.IntegralSolver{
+	id2method = map[int]service.IntegralSolver{
 		1: leftRectSolver,
 		2: rightRectSolver,
 		3: centralRectSolver,
 		4: trapezoidRectSolver,
+		5: simpsonSolver,
 	}
 )
 

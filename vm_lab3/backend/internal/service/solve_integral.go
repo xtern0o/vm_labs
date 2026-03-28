@@ -2,6 +2,7 @@ package service
 
 import "vm_lab3/internal/dto"
 
+// обобщенный метод для вычисления интеграла
 func SolveIntegral(
 	method IntegralSolver,
 	f func(x float64) float64,
