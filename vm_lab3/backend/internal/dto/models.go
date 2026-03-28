@@ -1,12 +1,11 @@
 package dto
 
 type CalcIntegralRequestDto struct {
-	ID       int     `json:"id"`
-	A        float64 `json:"a"`
-	B        float64 `json:"b"`
-	MethodID int     `json:"method_id"`
-	Eps      float64 `json:"eps"`
-	N        *int    `json:"n,omitempty"`
+	FuncID int     `json:"func_id"`
+	A      float64 `json:"a"`
+	B      float64 `json:"b"`
+	Eps    float64 `json:"eps"`
+	N      *int    `json:"n,omitempty"`
 }
 
 type CalcIntegralResponseDto struct {
@@ -14,4 +13,8 @@ type CalcIntegralResponseDto struct {
 	N        int      `json:"n"`
 	Messages []string `json:"messages"`
 	RungeR   float64  `json:"runge_r"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
 }
