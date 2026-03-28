@@ -1,6 +1,7 @@
 package service
 
 import (
+	"math"
 	"vm_lab3/internal/dto"
 )
 
@@ -25,16 +26,35 @@ func (s RightRectSolver) solve(
 		a, b = b, a
 	}
 
-	h := (b - a) / float64(n)
-	res := 0.0
-	for i := 1; i <= n; i++ {
-		y_i := f(h * float64(i))
-		res += h * y_i
+	k := 2.0
+	R := math.Inf(0)
+	var IPrev, ICurr float64
+	for R > eps {
+		IPrev = solveRightRectMethod(f, a, b, n)
+		n *= 2
+		ICurr = solveRightRectMethod(f, a, b, n)
+		R = CalcR(IPrev, ICurr, k)
 	}
 
 	return dto.CalcIntegralResponseDto{
-		Value:    res,
+		Value:    ICurr,
 		N:        n,
 		Messages: messages,
+		RungeR:   R,
 	}, nil
+}
+
+func solveRightRectMethod(
+	f func(x float64) float64,
+	a, b float64,
+	n int,
+) float64 {
+	h := (b - a) / float64(n)
+	I := 0.0
+	for i := 1; i <= n; i++ {
+		x := a + float64(i)*h
+		y_i := f(x)
+		I += h * y_i
+	}
+	return I
 }

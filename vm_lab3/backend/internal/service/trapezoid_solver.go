@@ -1,6 +1,7 @@
 package service
 
 import (
+	"math"
 	"vm_lab3/internal/dto"
 )
 
@@ -25,6 +26,29 @@ func (s TrapezoidRectSolver) solve(
 		a, b = b, a
 	}
 
+	k := 2.0
+	R := math.Inf(0)
+	var IPrev, ICurr float64
+	for R > eps {
+		IPrev = solveTrapezoidMethod(f, a, b, n)
+		n *= 2
+		ICurr = solveTrapezoidMethod(f, a, b, n)
+		R = CalcR(IPrev, ICurr, k)
+	}
+
+	return dto.CalcIntegralResponseDto{
+		Value:    ICurr,
+		N:        n,
+		Messages: messages,
+		RungeR:   R,
+	}, nil
+}
+
+func solveTrapezoidMethod(
+	f func(x float64) float64,
+	a, b float64,
+	n int,
+) float64 {
 	h := (b - a) / float64(n)
 	y0 := f(a)
 	yn := f(b)
@@ -33,11 +57,5 @@ func (s TrapezoidRectSolver) solve(
 		x := a + float64(i)*h
 		sum += f(x)
 	}
-	res := (h / 2) * (y0 + yn + 2*sum)
-
-	return dto.CalcIntegralResponseDto{
-		Value:    res,
-		N:        n,
-		Messages: messages,
-	}, nil
+	return (h / 2) * (y0 + yn + 2*sum)
 }

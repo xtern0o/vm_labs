@@ -13,4 +13,5 @@ type CalcIntegralResponseDto struct {
 	Value    float64  `json:"value"`
 	N        int      `json:"n"`
 	Messages []string `json:"messages"`
+	RungeR   float64  `json:"runge_r"`
 }
