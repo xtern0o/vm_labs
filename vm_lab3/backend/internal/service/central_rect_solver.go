@@ -39,7 +39,7 @@ func (s CentralRectSolver) solve(
 
 		n2 := n * 2
 		go func() {
-			currCh <- solveCentralRectMethod(f, a, b, n)
+			currCh <- solveCentralRectMethod(f, a, b, n2)
 		}()
 
 		IPrev = <-prevCh

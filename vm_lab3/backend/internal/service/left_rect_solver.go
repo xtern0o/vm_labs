@@ -39,7 +39,7 @@ func (s LeftRectSolver) solve(
 
 		n2 := n * 2
 		go func() {
-			currCh <- solveLeftRectMethod(f, a, b, n)
+			currCh <- solveLeftRectMethod(f, a, b, n2)
 		}()
 
 		IPrev = <-prevCh

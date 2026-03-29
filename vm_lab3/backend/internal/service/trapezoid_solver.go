@@ -39,7 +39,7 @@ func (s TrapezoidRectSolver) solve(
 
 		n2 := n * 2
 		go func() {
-			currCh <- solveTrapezoidMethod(f, a, b, n)
+			currCh <- solveTrapezoidMethod(f, a, b, n2)
 		}()
 
 		IPrev = <-prevCh
