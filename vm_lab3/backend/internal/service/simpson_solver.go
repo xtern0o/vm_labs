@@ -31,9 +31,22 @@ func (s SimpsonSolver) solve(
 	R := math.Inf(0)
 	var IPrev, ICurr float64
 	for R > eps {
-		IPrev = solveSimpsonMethod(f, a, b, n, &messages)
-		n *= 2
-		ICurr = solveSimpsonMethod(f, a, b, n, &messages)
+		prevCh := make(chan float64)
+		currCh := make(chan float64)
+
+		go func() {
+			prevCh <- solveSimpsonMethod(f, a, b, n, &messages)
+		}()
+
+		n2 := n * 2
+
+		go func() {
+			currCh <- solveSimpsonMethod(f, a, b, n2, &messages)
+		}()
+
+		IPrev = <-prevCh
+		ICurr = <-currCh
+		n = n2
 		R = CalcR(IPrev, ICurr, k)
 	}
 

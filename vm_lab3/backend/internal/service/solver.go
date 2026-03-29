@@ -32,8 +32,11 @@ func BasicCheck(f func(x float64) float64, a, b, eps float64, n int) error {
 	for i := 0; i <= divCheck; i++ {
 		x := a + h*float64(i)
 		y := f(x)
-		if math.IsInf(y, 0) || math.IsNaN(y) {
-			return fmt.Errorf("f(x) не определена корректно при x=%g (бесконечность или nan)", x)
+		if math.IsInf(y, 0) {
+			return fmt.Errorf("f(%g)=inf", x)
+		}
+		if math.IsNaN(y) {
+			return fmt.Errorf("f(%g) - не определена", x)
 		}
 	}
 

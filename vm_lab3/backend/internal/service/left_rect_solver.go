@@ -30,9 +30,22 @@ func (s LeftRectSolver) solve(
 	R := math.Inf(0)
 	var IPrev, ICurr float64
 	for R > eps {
-		IPrev = solveLeftRectMethod(f, a, b, n)
-		n *= 2
-		ICurr = solveLeftRectMethod(f, a, b, n)
+		prevCh := make(chan float64)
+		currCh := make(chan float64)
+
+		go func() {
+			prevCh <- solveLeftRectMethod(f, a, b, n)
+		}()
+
+		n2 := n * 2
+		go func() {
+			currCh <- solveLeftRectMethod(f, a, b, n)
+		}()
+
+		IPrev = <-prevCh
+		ICurr = <-currCh
+
+		n = n2
 		R = CalcR(IPrev, ICurr, k)
 	}
 
