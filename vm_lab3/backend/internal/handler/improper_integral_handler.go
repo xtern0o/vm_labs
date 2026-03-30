@@ -12,11 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-const (
-	defaultN = 4
-)
-
-func IntegralHandler(w http.ResponseWriter, r *http.Request) {
+func ImproperIntegralHandler(w http.ResponseWriter, r *http.Request) {
 	solverId, err := strconv.Atoi(chi.URLParam(r, "solver_id"))
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, "incorrect method id")
@@ -24,7 +20,7 @@ func IntegralHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	solver, err := registry.GetMethod(solverId)
 	if err != nil {
-		writeJSONError(w, http.StatusBadRequest, err.Error())
+		writeJSONError(w, http.StatusBadRequest, fmt.Sprintf("error: %v", err))
 		return
 	}
 
@@ -36,7 +32,7 @@ func IntegralHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fun, err := registry.GetFunc(req.FuncID)
+	spec, err := service.GetImproperFuncSpec(req.FuncID)
 	if err != nil {
 		writeJSONError(w, http.StatusNotFound, fmt.Sprintf("error: %v", err))
 		return
@@ -47,11 +43,12 @@ func IntegralHandler(w http.ResponseWriter, r *http.Request) {
 		n = *req.N
 	}
 
-	res, err := service.SolveIntegral(*solver, fun, req.A, req.B, req.Eps, n)
+	res, err := service.SolveImproperIntegral(*solver, spec, req.A, req.B, req.Eps, n)
 	if err != nil {
 		writeJSONError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
 	writeJSON(w, http.StatusOK, res)
 
 }

@@ -37,6 +37,7 @@ func main() {
 		r.Use(middleware.AllowContentType("application/json"))
 
 		r.Post("/integral/{solver_id}", handler.IntegralHandler)
+		r.Post("/integral/improper/{solver_id}", handler.ImproperIntegralHandler)
 	})
 
 	srv := &http.Server{
