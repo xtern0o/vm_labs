@@ -10,12 +10,22 @@ const b = ref(1)
 const result = ref('')
 const error = ref('')
 
+const defFuncOptions = [
+  { id: 1, label: 'Функция 1', tex: '-2x^3-3x^2+x+5', type: 'def' },
+  { id: 2, label: 'Функция 2', tex: 'e^{0,1x}', type: 'def' },
+  { id: 3, label: 'Функция 3', tex: '\\sin(\\cos(x)) + 2', type: 'def' },
+  { id: 4, label: 'Функция 4', tex: '2 \\cdot \\ln x', type: 'def' },
+]
+
+const improperFuncOptions = [
+  { id: 5, label: 'Несобеств. 1', tex: '\\frac{1}{\\sqrt{x}}', type: 'imp' },
+  { id: 6, label: 'Несобеств. 2', tex: '\\frac{1}{1-x}', type: 'imp' },
+  { id: 7, label: 'Несобеств. 3', tex: '\\frac{1}{\\sqrt{2x-x^{2}}}', type: 'imp' },
+]
+
 const funcOptions = [
-  { id: 1, label: 'Функция 1', tex: '-2x^3-3x^2+x+5' },
-  { id: 2, label: 'Функция 2', tex: 'e^{0,1x}' },
-  { id: 3, label: 'Функция 3', tex: '\\sin(\\cos(x)) + 2' },
-  { id: 4, label: 'Функция 4', tex: '2 \\cdot \\ln x' },
-//   { id: 5, label: 'Функция 5', tex: '-0.4x^3 + 2x^2 - 2 = 0' },
+  ...defFuncOptions.map(f => ({ ...f, globalType: 'def' })),
+  ...improperFuncOptions.map(f => ({ ...f, globalType: 'imp' })),
 ]
 
 const integralMethodOptions = [
@@ -26,30 +36,47 @@ const integralMethodOptions = [
   { id: 5, label: 'Метод Симпсона' },
 ]
 
+
 const selectedFunc = ref(null)
+const selectedFuncType = ref(null)
 const selectedMethod = ref(null)
 
 function solveIntegral() {
-    const eps = epsilon.value || 0.001
-    const nOut = n.value || 4
-    const method = selectedMethod.value
+  const eps = epsilon.value || 0.001
+  const nOut = n.value || 4
+  const method = selectedMethod.value
 
-    const payload = {
-        func_id: selectedFunc.value,
-        a: a.value,
-        b: b.value,
-        eps: eps,
-        n: nOut,
-    }
+  // Найти выбранную функцию и её тип
+  const funcObj = funcOptions.find(f => f.id === selectedFunc.value && f.globalType === selectedFuncType.value)
+  if (!funcObj) {
+    error.value = 'Не выбрана функция'
+    return
+  }
 
-    api.post(`/api/integral/${method}`, payload)
-        .then(response => {
-            processResult(response)
-        })
-        .catch(err => {
-            error.value = (err.response?.data?.error || `Ошибка запроса (${err.response.status})`)
-            result.value = ''
-        })
+  const payload = {
+    func_id: funcObj.id,
+    a: a.value,
+    b: b.value,
+    eps: eps,
+    n: nOut,
+  }
+
+  let url = ''
+  if (funcObj.globalType === 'imp') {
+    url = `/api/integral/improper/${method}`
+    payload.func_id -= defFuncOptions.length
+  } else {
+    url = `/api/integral/${method}`
+  }
+
+  api.post(url, payload)
+    .then(response => {
+      processResult(response)
+    })
+    .catch(err => {
+      error.value = (err.response?.data?.error || `Ошибка запроса (${err.response.status})`)
+      result.value = ''
+    })
 }
 
 async function processResult(response) {
@@ -122,20 +149,22 @@ async function processResult(response) {
                 <h3 class="choice-title">Доступные функции:</h3>
                 <div class="radio-list">
                 <label
-                    v-for="option in funcOptions"
-                    :key="option.id"
-                    class="radio-item"
+                  v-for="option in funcOptions"
+                  :key="option.globalType + '-' + option.id"
+                  class="radio-item"
                 >
-                    <input
-                    v-model="selectedFunc"
-                    :value="option.id"
+                  <input
                     type="radio"
-                    name="func"
-                    />
-                    <span class="radio-content">
+                    :value="option.id"
+                    v-model="selectedFunc"
+                    :name="'func-' + option.globalType"
+                    @change="selectedFuncType = option.globalType"
+                  />
+                  <span class="radio-content">
                     <span class="radio-caption">{{ option.label }}</span>
                     <span class="math-inline" v-katex="option.tex"></span>
-                    </span>
+                    <!-- <span v-if="option.globalType === 'imp'" class="improper-label">(несобственный)</span> -->
+                  </span>
                 </label>
                 </div>
             </div>
