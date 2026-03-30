@@ -198,7 +198,7 @@ async function processResult(response) {
             <label for="intervalA" class="form-label">a:</label>
             <input
               id="intervalA"
-              v-model.number="b"
+              v-model.number="a"
               type="number"
               step="0.01"
               class="form-input form-input-small"
@@ -210,7 +210,7 @@ async function processResult(response) {
             <label for="intervalB" class="form-label">b:</label>
             <input
               id="intervalB"
-              v-model.number="a"
+              v-model.number="b"
               type="number"
               step="0.01"
               class="form-input form-input-small"
