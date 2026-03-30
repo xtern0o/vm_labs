@@ -241,6 +241,188 @@ a {
     }
 }
 
+.lab-view {
+    padding: $spacing-md 0;
+}
+
+.lab-heading {
+    font-family: $mono-font;
+    font-size: $font-size-heading;
+    color: $text-primary;
+    margin: 0 0 $spacing-xl 0;
+    font-weight: normal;
+    border-bottom: $border-width solid $border-color;
+    padding-bottom: $spacing-md;
+}
+
+.choice-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $spacing-lg;
+}
+
+.params-container {
+    display: flex;
+    gap: $spacing-xl;
+    margin-bottom: $spacing-lg;
+}
+
+.param-group {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    .form-label {
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+}
+
+.form-input-small {
+    max-width: 120px;
+}
+
+.inline-inputs {
+    display: flex;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+}
+
+.input-stack {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    .form-label {
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
+}
+
+.choice-card {
+    border: $border-width solid $border-color;
+    background: $bg-secondary;
+    padding: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+}
+
+.choice-title {
+    margin: 0 0 $spacing-sm 0;
+    font-size: $font-size-base;
+    font-weight: normal;
+    color: $text-primary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.choice-subtitle {
+    margin: $spacing-sm 0 0 0;
+    font-size: $font-size-small;
+    font-weight: normal;
+    color: $text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.radio-list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.radio-item {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-sm;
+    color: $text-primary;
+    cursor: pointer;
+}
+
+.radio-content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+}
+
+.radio-caption {
+    color: $text-primary;
+}
+
+.math-inline {
+    color: $text-secondary;
+}
+
+.math-display {
+    color: $text-secondary;
+    padding: $spacing-xs 0;
+}
+
+:deep(.katex-display) {
+    margin: 0;
+}
+
+.radio-item input[type='radio'] {
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border: $border-width solid $border-color;
+    border-radius: 50%;
+    background: $bg-primary;
+    display: inline-block;
+    position: relative;
+}
+
+.radio-item input[type='radio']:checked {
+    border-color: $accent-color;
+}
+
+.radio-item input[type='radio']:checked::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: $accent-color;
+}
+
+.radio-item input[type='radio']:focus-visible {
+    outline: 1px solid $accent-color;
+    outline-offset: 2px;
+}
+
+.solve-btn {
+    margin-top: auto;
+}
+
+.button-group {
+    display: flex;
+    gap: $spacing-md;
+    align-items: center;
+}
+
+.output {
+    margin-top: $spacing-xl;
+    background: $bg-secondary;
+    padding: $spacing-lg;
+    border-radius: $border-radius;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.output-label {
+    font-weight: bold;
+    margin-bottom: $spacing-sm;
+}
+
+@media (max-width: 860px) {
+    .choice-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;

@@ -19,6 +19,12 @@ export const structure = [
         description: 'Решение нелинейных уравнений и систем',
         component: () => import('@/components/labs/Lab2.vue')
       }),
+      new Page({
+        id: 'lab3',
+        name: 'Лабораторная работа 3',
+        description: 'Численное решение интегралов',
+        component: () => import('@/components/labs/Lab3.vue')
+      })
     ]
   }),
 ]
