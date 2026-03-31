@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"math"
 	"vm_lab3/internal/dto"
 )
@@ -29,7 +30,10 @@ func (s TrapezoidRectSolver) solve(
 	k := 2.0
 	R := math.Inf(0)
 	var IPrev, ICurr float64
+
+	iter := 0
 	for R > eps {
+		iter++
 		prevCh := make(chan float64)
 		currCh := make(chan float64)
 
@@ -45,8 +49,14 @@ func (s TrapezoidRectSolver) solve(
 		IPrev = <-prevCh
 		ICurr = <-currCh
 
+		messages = append(messages, fmt.Sprintf("iter: %d. I_0 = %f (n=%d)", iter, IPrev, n))
+		messages = append(messages, fmt.Sprintf("iter: %d. I_1 = %f (n=%d)", iter, ICurr, n2))
+
 		n = n2
 		R = CalcR(IPrev, ICurr, k)
+
+		messages = append(messages, fmt.Sprintf("R = %f", R))
+
 	}
 
 	return dto.CalcIntegralResponseDto{

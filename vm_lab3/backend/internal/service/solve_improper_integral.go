@@ -8,7 +8,10 @@ import (
 	"vm_lab3/internal/dto"
 )
 
-const improperDelta = 1e-6
+const minDelta = 1e-8
+const deltaStep = 0.1
+
+const numOfEqual = 3
 
 type interval struct {
 	A float64
@@ -32,37 +35,79 @@ func SolveImproperIntegral(
 		return res, nil
 	}
 
-	if !spec.Convergent {
-		return dto.CalcIntegralResponseDto{}, fmt.Errorf("интеграл не существует - расходится")
-	}
-
-	intervals := buildSubIntervals(a, b, activeBreakpoints, improperDelta)
-	if len(intervals) == 0 {
-		return dto.CalcIntegralResponseDto{}, fmt.Errorf("не удалось построить интервалы интегрирования")
-	}
+	// if !spec.Convergent { // TODO: определять разрывы
+	// 	return dto.CalcIntegralResponseDto{}, fmt.Errorf("интеграл не существует - расходится")
+	// }
 
 	res := dto.CalcIntegralResponseDto{
 		Messages: []string{"обнаружены точки разрыва - интеграл вычисляется как несобственный"},
 	}
 	res.Messages = append(res.Messages, fmt.Sprintf("точки разрыва: %v", activeBreakpoints))
-	res.Messages = append(res.Messages, fmt.Sprintf("интервалы интегрирования: %s", intervalsToString(intervals)))
 
-	for _, in := range intervals {
-		partRes, err := SolveIntegral(method, spec.Fn, in.A, in.B, eps, n)
-		if err != nil {
-			return dto.CalcIntegralResponseDto{}, err
+	delta := 1e-2
+	var prevValue float64
+	firstIter := true
+	var lastIntervals []interval
+	var lastParts []dto.CalcIntegralResponseDto
+
+	for {
+		intervals := buildSubIntervals(a, b, activeBreakpoints, delta)
+		if len(intervals) == 0 {
+			return dto.CalcIntegralResponseDto{}, fmt.Errorf("не удалось построить интервалы интегрирования")
 		}
 
-		res.Value += partRes.Value
-		res.N += partRes.N
+		value := 0.0
+		nSum := 0
+		rungeR := 0.0
+		parts := make([]dto.CalcIntegralResponseDto, 0, len(intervals))
 
-		res.RungeR = math.Max(res.RungeR, partRes.RungeR)
+		for _, in := range intervals {
+			partRes, err := SolveIntegral(method, spec.Fn, in.A, in.B, eps, n)
+			if err != nil {
+				return dto.CalcIntegralResponseDto{}, err
+			}
+			value += partRes.Value
+			nSum += partRes.N
+			rungeR = math.Max(rungeR, partRes.RungeR)
+			parts = append(parts, partRes)
+		}
 
-		res.Messages = append(res.Messages, partRes.Messages...)
-		res.Messages = append(res.Messages, fmt.Sprintf("вычислен интеграл на интервале (%.6f, %.6f)", in.A, in.B))
+		dif := math.Abs(value - prevValue)
+
+		if !firstIter {
+			res.Messages = append(res.Messages, fmt.Sprintf("currDelta=%.9f ; |I_prev - I_curr| = %f", delta, dif))
+		}
+
+		if !firstIter && dif < eps {
+			res.Value = value
+			res.N = nSum
+			res.RungeR = rungeR
+			res.Messages = append(res.Messages, fmt.Sprintf("интервалы интегрирования: %s", intervalsToString(lastIntervals)))
+			for i, in := range lastIntervals {
+				res.Messages = append(res.Messages, lastParts[i].Messages...)
+				res.Messages = append(res.Messages, fmt.Sprintf("вычислен интеграл на интервале (%.6f, %.6f)", in.A, in.B))
+			}
+
+			res.Messages = append(res.Messages, fmt.Sprintf("достигнута сходимость по eps=%.2e", eps))
+			return res, nil
+		}
+
+		prevValue = value
+		lastIntervals = intervals
+		lastParts = parts
+		firstIter = false
+		delta *= deltaStep
+
+		if delta <= minDelta {
+			res.Messages = append(res.Messages, "достигнут минимальный delta, но сходимость не достигнута")
+			res.Messages = append(res.Messages, "[!] возможно интеграл расходится")
+			res.Value = value
+			res.N = nSum
+			res.RungeR = rungeR
+			return res, nil
+		}
+
 	}
-
-	return res, nil
 }
 
 // проверка точек разрыва
