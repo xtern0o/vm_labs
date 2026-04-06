@@ -61,13 +61,7 @@ function solveIntegral() {
     n: nOut,
   }
 
-  let url = ''
-  if (funcObj.globalType === 'imp') {
-    url = `/api/integral/improper/${method}`
-    payload.func_id -= defFuncOptions.length
-  } else {
-    url = `/api/integral/${method}`
-  }
+  const url = `/api/integral/${method}`
 
   api.post(url, payload)
     .then(response => {
@@ -102,6 +96,10 @@ async function processResult(response) {
     resStr += `> n, при котором достигнута необходимая точность: ${nRes}\n`
 
     result.value = resStr
+}
+
+const clearError = () => {
+  error.value = ''
 }
 
 </script>

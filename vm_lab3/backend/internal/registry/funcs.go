@@ -18,6 +18,15 @@ var (
 	func4 = func(x float64) float64 {
 		return 2 * math.Log(x)
 	}
+	func5 = func(x float64) float64 {
+		return 1 / math.Sqrt(x)
+	}
+	func6 = func(x float64) float64 {
+		return 1 / (1 - x)
+	}
+	func7 = func(x float64) float64 {
+		return 1 / math.Sqrt(2*x-x*x)
+	}
 )
 
 var id2func = map[int]func(x float64) float64{
@@ -25,6 +34,9 @@ var id2func = map[int]func(x float64) float64{
 	2: func2,
 	3: func3,
 	4: func4,
+	5: func5,
+	6: func6,
+	7: func7,
 }
 
 func GetFunc(id int) (func(x float64) float64, error) {

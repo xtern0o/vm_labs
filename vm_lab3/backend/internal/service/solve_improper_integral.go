@@ -3,45 +3,36 @@ package service
 import (
 	"fmt"
 	"math"
-	"sort"
 	"strings"
 	"vm_lab3/internal/dto"
 )
 
 const minDelta = 1e-8
 const deltaStep = 0.1
-
-const numOfEqual = 3
+const numOfEqual = 4
 
 type interval struct {
 	A float64
 	B float64
 }
 
-func SolveImproperIntegral(
+func solveImproper(
 	method IntegralSolver,
-	spec ImproperFuncSpec,
+	fn func(float64) float64,
+	activeBreakpoints []float64,
 	a, b, eps float64,
 	n int,
 ) (dto.CalcIntegralResponseDto, error) {
 
-	activeBreakpoints := filterBreakpoints(spec.Breakpoints, a, b)
-	if len(activeBreakpoints) == 0 {
-		res, err := SolveIntegral(method, spec.Fn, a, b, eps, n)
-		if err != nil {
-			return res, err
-		}
-		res.Messages = append(res.Messages, "точки разрыва не попадают в пределы интегрирования - интеграл вычислен как обычный")
-		return res, nil
+	isConvergent, convMsg := checkConvergence(fn, activeBreakpoints, a, b)
+	if !isConvergent {
+		return dto.CalcIntegralResponseDto{}, fmt.Errorf("интеграл не существует: %s", convMsg)
 	}
-
-	// if !spec.Convergent { // TODO: определять разрывы
-	// 	return dto.CalcIntegralResponseDto{}, fmt.Errorf("интеграл не существует - расходится")
-	// }
 
 	res := dto.CalcIntegralResponseDto{
 		Messages: []string{"обнаружены точки разрыва - интеграл вычисляется как несобственный"},
 	}
+	res.Messages = append(res.Messages, convMsg)
 	res.Messages = append(res.Messages, fmt.Sprintf("точки разрыва: %v", activeBreakpoints))
 
 	delta := 1e-2
@@ -49,6 +40,9 @@ func SolveImproperIntegral(
 	firstIter := true
 	var lastIntervals []interval
 	var lastParts []dto.CalcIntegralResponseDto
+
+	equalCount := 0
+	prevDif := 0.0
 
 	for {
 		intervals := buildSubIntervals(a, b, activeBreakpoints, delta)
@@ -62,7 +56,7 @@ func SolveImproperIntegral(
 		parts := make([]dto.CalcIntegralResponseDto, 0, len(intervals))
 
 		for _, in := range intervals {
-			partRes, err := SolveIntegral(method, spec.Fn, in.A, in.B, eps, n)
+			partRes, err := method.solve(fn, in.A, in.B, eps, n)
 			if err != nil {
 				return dto.CalcIntegralResponseDto{}, err
 			}
@@ -76,6 +70,20 @@ func SolveImproperIntegral(
 
 		if !firstIter {
 			res.Messages = append(res.Messages, fmt.Sprintf("currDelta=%.9f ; |I_prev - I_curr| = %f", delta, dif))
+
+			if math.Abs(value) > 1e12 {
+				return dto.CalcIntegralResponseDto{}, fmt.Errorf("интеграл расходится - значение превысило 1e12")
+			}
+
+			// если подряд несколько похожих значений
+			if dif >= prevDif || like(dif, prevDif, eps) {
+				equalCount++
+				if equalCount >= numOfEqual {
+					return dto.CalcIntegralResponseDto{}, fmt.Errorf("интеграл расходится - не стабилизируется после %d итераций", numOfEqual)
+				}
+			} else {
+				equalCount = 0
+			}
 		}
 
 		if !firstIter && dif < eps {
@@ -97,10 +105,11 @@ func SolveImproperIntegral(
 		lastParts = parts
 		firstIter = false
 		delta *= deltaStep
+		prevDif = dif
 
 		if delta <= minDelta {
 			res.Messages = append(res.Messages, "достигнут минимальный delta, но сходимость не достигнута")
-			res.Messages = append(res.Messages, "[!] возможно интеграл расходится")
+			res.Messages = append(res.Messages, "возможно интеграл расходится")
 			res.Value = value
 			res.N = nSum
 			res.RungeR = rungeR
@@ -108,18 +117,6 @@ func SolveImproperIntegral(
 		}
 
 	}
-}
-
-// проверка точек разрыва
-func filterBreakpoints(points []float64, a, b float64) []float64 {
-	res := make([]float64, 0)
-	for _, p := range points {
-		if a <= p && p <= b {
-			res = append(res, p)
-		}
-	}
-	sort.Float64s(res)
-	return res
 }
 
 // разбиение интервала с учетом точек разрыва - отступаем от них на малое delta
@@ -177,4 +174,9 @@ func intervalsToString(intervals []interval) string {
 	}
 
 	return sb.String()
+}
+
+// функция для определения того, что значения не сильно отличаются
+func like(a, b, eps float64) bool {
+	return math.Abs(a-b) <= eps
 }
