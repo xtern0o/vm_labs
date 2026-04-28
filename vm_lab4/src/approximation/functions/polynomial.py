@@ -28,9 +28,8 @@ class PolynomialApproximation(ApproximationFunction):
         
         # гаусс-зейдель
         try:
-            # result = self.solver.solve(AtA, Aty)
-            # result = 
-            self.coefficients = np.linalg.solve(AtA, Aty)
+            result = self.solver.solve(AtA, Aty)
+            self.coefficients = result.solution
         except RuntimeError as e:
             print(f"[Error]: {e}")
             print("  Используется прямой метод решения (numpy.linalg.solve)...")
