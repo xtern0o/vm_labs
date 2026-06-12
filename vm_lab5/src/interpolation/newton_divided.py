@@ -43,5 +43,5 @@ def interpolate_newton_divided2(x: list[float], y: list[float], target_x: float)
     for i in range(1, len(x)):
         term *= (target_x - x[n - i])
         result += table[n - i - 1][i] * term
-        print(f"2: -> {table[n - i - 1][i]}")
+        # print(f"2: -> {table[n - i - 1][i]}")
     return result
