@@ -35,7 +35,7 @@ func solveImproper(
 	res.Messages = append(res.Messages, convMsg)
 	res.Messages = append(res.Messages, fmt.Sprintf("точки разрыва: %v", activeBreakpoints))
 
-	delta := 1e-2
+	delta := 1e-1
 	var prevValue float64
 	firstIter := true
 	var lastIntervals []interval

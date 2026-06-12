@@ -19,7 +19,7 @@ def main():
     
     print_header()
     
-    input_file = input("Путь к JSON файлу (Enter для ввода вручную): ").strip()
+    input_file = input("Путь к файлу (JSON или CSV i,x,y) [Enter для ввода вручную]: ").strip()
     
     try:
         x, y = InputHandler.input_data(input_file if input_file else "")
@@ -70,7 +70,6 @@ def main():
         print(f"Ошибка вывода: {e}")
         return 1
     
-    # Построение графиков
     try:
         plotter = ApproximationPlotter(x, y, results, best_name)
         single_plot, build_best_fit, filename = plotter.ask_plot_preferences()

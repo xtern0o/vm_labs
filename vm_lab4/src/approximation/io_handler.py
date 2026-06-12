@@ -1,6 +1,7 @@
 """Модуль для ввода-вывода данных согласно заданию"""
 
 import json
+import csv
 import numpy as np
 from typing import Tuple, Dict, Any
 from pathlib import Path
@@ -16,7 +17,9 @@ class InputHandler:
         Ввести данные из файла или консоли
         
         Args:
-            filepath: Путь к JSON файлу. Если пусто - ввод вручную
+            filepath: Путь к JSON или CSV файлу. Если пусто - ввод вручную
+            CSV формат: i,x,y (минимум 4 точки)
+            JSON формат: {"x": [...], "y": [...]}
             
         Returns:
             (x, y) - массивы значений
@@ -28,12 +31,38 @@ class InputHandler:
     
     @staticmethod
     def _read_from_file(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
-        """Чтение данных из JSON файла"""
+        """Чтение данных из JSON или CSV файла"""
         try:
             path = Path(filepath)
             if not path.exists():
                 raise FileNotFoundError(f"Файл не найден: {filepath}")
             
+            # Определяем формат по расширению файла
+            file_ext = path.suffix.lower()
+            
+            if file_ext == '.json':
+                return InputHandler._read_json(filepath)
+            elif file_ext == '.csv':
+                return InputHandler._read_csv(filepath)
+            else:
+                # Пробуем определить по содержимому
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    first_line = f.readline().strip()
+                
+                if first_line.startswith('{'):
+                    return InputHandler._read_json(filepath)
+                else:
+                    return InputHandler._read_csv(filepath)
+                    
+        except FileNotFoundError as e:
+            raise e
+        except Exception as e:
+            raise ValueError(f"Ошибка чтения файла: {e}")
+    
+    @staticmethod
+    def _read_json(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
+        """Чтение данных из JSON файла"""
+        try:
             with open(filepath, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
@@ -50,29 +79,91 @@ class InputHandler:
             if len(x) != len(y):
                 raise ValueError(f"Размер x ({len(x)}) != размер y ({len(y)})")
             
-            if len(x) < 4 or len(x) > 12:
-                raise ValueError(f"Требуется 4-12 точек, получено {len(x)}")
+            if len(x) < 4:
+                raise ValueError(f"Требуется минимум 4 точки, получено {len(x)}")
             
-            print(f"Загружено {len(x)} точек из {filepath}")
+            print(f"Загружено {len(x)} точек из {filepath} (JSON)")
             return x, y
             
-        except FileNotFoundError as e:
-            raise e
         except json.JSONDecodeError as e:
             raise ValueError(f"Ошибка чтения JSON: {e}")
-        except (ValueError, TypeError) as e:
-            raise ValueError(f"Ошибка данных: {e}")
+    
+    @staticmethod
+    def _read_csv(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
+        """Чтение данных из CSV файла формата: i,x,y"""
+        try:
+            x = []
+            y = []
+            
+            with open(filepath, 'r', encoding='utf-8') as f:
+                reader = csv.reader(f)
+                
+                # Пропускаем заголовок если есть
+                first_row = next(reader, None)
+                if first_row is None:
+                    raise ValueError("CSV файл пуст")
+                
+                # Проверяем заголовок
+                if first_row[0].lower() in ['i', 'index', 'n']:
+                    # Это заголовок, пропускаем
+                    pass
+                else:
+                    # Это данные, обрабатываем
+                    try:
+                        idx = int(first_row[0])
+                        xi = float(first_row[1])
+                        yi = float(first_row[2])
+                        x.append(xi)
+                        y.append(yi)
+                    except (ValueError, IndexError):
+                        raise ValueError("CSV должен быть в формате: i,x,y")
+                
+                # Читаем остальные строки
+                for row_num, row in enumerate(reader, start=2):
+                    if not row or all(cell.strip() == '' for cell in row):
+                        continue  # Пропускаем пустые строки
+                    
+                    if len(row) < 3:
+                        raise ValueError(f"Строка {row_num}: недостаточно значений. Ожидается: i,x,y")
+                    
+                    try:
+                        idx = int(row[0])
+                        xi = float(row[1])
+                        yi = float(row[2])
+                        x.append(xi)
+                        y.append(yi)
+                    except ValueError as e:
+                        raise ValueError(f"Строка {row_num}: ошибка преобразования значений. {e}")
+            
+            x = np.array(x, dtype=float)
+            y = np.array(y, dtype=float)
+            
+            # Проверка на дублирующиеся x
+            if len(x) != len(set(x)):
+                raise ValueError("Ошибка: одинаковые x значения!")
+            
+            if len(x) != len(y):
+                raise ValueError(f"Размер x ({len(x)}) != размер y ({len(y)})")
+            
+            if len(x) < 4:
+                raise ValueError(f"Требуется минимум 4 точки, получено {len(x)}")
+            
+            print(f"Загружено {len(x)} точек из {filepath} (CSV)")
+            return x, y
+            
+        except Exception as e:
+            raise ValueError(f"Ошибка чтения CSV: {e}")
     
     @staticmethod
     def _read_from_console() -> Tuple[np.ndarray, np.ndarray]:
         """Ввод данных с консоли"""
-        print("Введите данные для аппроксимации (8-12 точек)\n")
+        print("Введите данные для аппроксимации (минимум 4 точки)\n")
         
         while True:
             try:
-                n = int(input("Количество точек (8-12): "))
-                if n < 4 or n > 12:
-                    print("Требуется 4-12 точек\n")
+                n = int(input("Количество точек (минимум 4): "))
+                if n < 4:
+                    print("Требуется минимум 4 точки\n")
                     continue
                 break
             except ValueError:

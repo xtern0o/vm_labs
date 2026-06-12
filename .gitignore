@@ -33,3 +33,8 @@ build/
 
 # Go workspace
 go.work
+
+# Python venv
+venv
+venv/
+venv/*

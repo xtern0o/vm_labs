@@ -26,6 +26,8 @@ var (
 	}
 	func7 = func(x float64) float64 {
 		return 1 / math.Sqrt(2*x-x*x)
+		// return x * math.Log(x)
+		// return math.Acos(x) / math.Sqrt(1-x*x)
 	}
 )
 

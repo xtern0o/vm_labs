@@ -85,7 +85,7 @@ func FindBreakpoints(fn func(float64) float64, a, b float64) []float64 {
 		v0 := g(x0)
 		v1 := g(x1)
 
-		// 1. Точное попадание в ноль
+		// точное попадание в ноль
 		if v0 == 0 {
 			breakpoints = append(breakpoints, x0)
 		}
@@ -100,9 +100,8 @@ func FindBreakpoints(fn func(float64) float64, a, b float64) []float64 {
 			root := bisectionRoot(g, x0, x1, 1e-7)
 
 			val := fn(root)
-			// Разрыв второго рода (f(x) улетает в бесконечность) будет, если
-			// модуль функции в этой точке очень большой,
-			// либо функция там вообще не определена (NaN|Inf)
+			// разрыв второго рода (f(x) улетает в бесконечность) будет, если
+			// модуль функции в этой точке NaN или Inf
 			if math.IsNaN(val) || math.IsInf(val, 0) || math.Abs(val) > 1e6 {
 				breakpoints = append(breakpoints, root)
 			}
@@ -159,7 +158,7 @@ func bisectionRoot(g func(float64) float64, a, b float64, eps float64) float64 {
 	return x
 }
 
-// поиск локального минимума методом ЗОЛОТОГО сечения
+// поиск локального минимума методом золотого сечения
 func findMinimum(g func(float64) float64, a, b float64, eps float64) float64 {
 	phi := (1.0 + math.Sqrt(5.0)) / 2.0
 	resphi := 2.0 - phi
